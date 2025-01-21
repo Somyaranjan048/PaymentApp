@@ -33,8 +33,6 @@ const UPIScreen = ({ navigation }:{navigation:any}) => {
   ];
   const iconAnimations = useRef(UpiIcons.map(() => new Animated.Value(-100))).current;
 
-  
-
   useEffect(() => {
     // Sequence of animations
     Animated.sequence([
@@ -110,7 +108,7 @@ const UPIScreen = ({ navigation }:{navigation:any}) => {
           </Text>
         </Animated.View>
 
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}>
           {/* Main Payment Card */}

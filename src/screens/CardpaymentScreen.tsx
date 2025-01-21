@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,15 @@ import {
   Animated,
   Alert,
   Image,
+  Dimensions,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ThemeContext} from '../../ThemeContext'; // Adjust path as needed
 import {ThemeProvider} from '../../ThemeContext'; // Adjust the path as needed
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient';
+
+const {width} = Dimensions.get('window');
 
 const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
   const [cardNumber, setCardNumber] = useState('');
@@ -28,9 +32,31 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
     cvv: '',
   });
 
+  //const animationValue = useState(new Animated.Value(0))[0];
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(0))[0];
+
   const {isDarkMode} = useContext(ThemeContext) || {};
   const styles = createStyles(isDarkMode ?? false);
 
+  //Screen Loading Animation 
+  useEffect(()=>{
+    Animated.parallel([
+      Animated.timing(fadeAnim,{
+        toValue:1,
+        duration:1000,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim,{
+        toValue: 0,
+        tension:20,
+        friction:7,
+        useNativeDriver:true,
+      }),
+    ]).start();
+  },[fadeAnim, slideAnim]);
+
+  //Card flip animation configuration
   const frontInterpolate = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
@@ -128,21 +154,39 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
 
   return (
     <ThemeProvider>
-      <SafeAreaView style={styles.container}>
+     <LinearGradient colors={isDarkMode ? ['#07161B', '#0A2833'] : ['#448A99', '#66A5B3']}
+     style= {styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        {/*Animation Holder */}
+        <Animated.View
+            style={[
+              styles.navbar,
+              {
+                opacity: fadeAnim,
+                transform: [{translateY: slideAnim}],
+              },
+            ]}>
         {/* Navbar with Back Button */}
-        <View style={styles.navbar}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Icon
               name="arrow-back"
               size={28}
-              color={isDarkMode ? '#CEC7BF' : '#07161B'}
+              color={isDarkMode ? '#CEC7BF' : '#FFFFFF'}
             />
           </TouchableOpacity>
           <Text style={styles.navTitle}>Enter Card Details</Text>
-        </View>
-        <View style={styles.content}>
+        </Animated.View>
+        <Animated.View
+            style={[
+              styles.content,
+              {
+                opacity: fadeAnim,
+                transform: [{translateY: slideAnim}],
+              },
+            ]}>
+        {/*Card Container with Shadow*/}
           <View style={styles.cardContainer}>
-            {/* Card Front */}
+            {/* Card Front view*/}
             <Animated.View
               style={[
                 styles.card,
@@ -150,12 +194,15 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
                   transform: [{rotateY: frontInterpolate}],
                 },
               ]}>
+              <LinearGradient
+                  colors={isDarkMode ? ['#2C5364', '#203A43'] : ['#56CCF2', '#2F80ED']}
+                  style={styles.cardGradient}>
               <View style={styles.chipImageContent}>
                   <Image source={require('../assets/images/contactless.png')} style={styles.chipImage}/>
                   <Image source={require('../assets/images/chip.png')} style={styles.chipImage}/>
               </View>
               <Text style={styles.cardNumber}>
-                {cardNumber || '•••• •••• •••• ••••'}
+                {cardNumber.replace(/(.{4})/g,'$1').trim() || '•••• •••• •••• ••••'}
               </Text>
               <View style={styles.cardDetailsRow}>
                 <Text style={styles.cardHolderLabel}>Card Holder</Text>
@@ -163,13 +210,14 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
               </View>
               <View style={styles.cardDetailsRow}>
                 <Text style={styles.cardHolder}>
-                  {cardHolder || 'FULL NAME'}
+                  {cardHolder.toUpperCase() || 'FULL NAME'}
                 </Text>
                 <Text style={styles.expiry}>{expiryDate || 'MM/YY'}</Text>
               </View>
+              </LinearGradient>
             </Animated.View>
 
-            {/* Card Back */}
+            {/* Back of the card view*/}
             <Animated.View
               style={[
                 styles.card,
@@ -178,6 +226,9 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
                   transform: [{rotateY: backInterpolate}],
                 },
               ]}>
+              <LinearGradient
+                  colors={isDarkMode ? ['#2C5364', '#203A43'] : ['#56CCF2', '#2F80ED']}
+                  style={styles.cardGradient}>
               <View style={styles.backContentBox}>
                 <View style={styles.blackstrap} />
                 <View style={styles.ccvcontent}>
@@ -185,6 +236,7 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
                   <Text style={styles.cvv}>{cvv || '•••'}</Text>
                 </View>
               </View>
+              </LinearGradient>
             </Animated.View>
           </View>
 
@@ -198,6 +250,7 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
               onChangeText={validateCardNumber}
               maxLength={16}
               value={cardNumber}
+              placeholderTextColor= '#999'
             />
             {errors.cardNumber ? (
               <Text style={styles.errorText}>{errors.cardNumber}</Text>
@@ -249,11 +302,16 @@ const EnterCardDetailsScreen = ({navigation}: {navigation: any}) => {
                   navigation.navigate('NextScreen');
                 }
               }}>
+              <LinearGradient
+                  colors={isDarkMode ? ['#2C5364', '#203A43'] : ['#56CCF2', '#2F80ED']}
+                  style={styles.gradientButton}>
               <Text style={styles.proceedButtonText}>Proceed</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
-        </View>
-      </SafeAreaView>
+          </Animated.View>
+        </SafeAreaView>
+      </LinearGradient>
     </ThemeProvider>
   );
 };
@@ -262,14 +320,20 @@ const createStyles = (isDarkMode: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#07161B' : '#448A99',
-      padding: 16,
+    },
+    safeArea:{
+      flex: 1,
     },
     navbar: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 16,
       zIndex: 10,
+    },
+    backButton:{
+      padding:8,
+      borderRadius:20,
+      backgroundColor: 'rgba(255,255,255,0.1)',
     },
     navTitle: {
       fontSize: 20,
@@ -288,13 +352,21 @@ const createStyles = (isDarkMode: boolean) =>
       position: 'relative',
     },
     card: {
-      width: 300,
-      height: 180,
-      borderRadius: 12,
-      backgroundColor: isDarkMode ? '#448A99' : '#CEC7BF',
-      padding: 16,
-      position: 'absolute',
-      backfaceVisibility: 'hidden',
+      width: width -40,
+      height: 200,
+      borderRadius: 16,
+      position:'absolute',
+      backfaceVisibility:'hidden',
+      elevation:5,
+      shadowColor:'#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity:0.25,
+      shadowRadius:3.84,
+    },
+    cardGradient:{
+      flex:1,
+      padding:20,
+      borderRadius: 16,
     },
     cardBack: {
       backgroundColor: isDarkMode ?  '#448A99' : '#CEC7BF',
@@ -368,19 +440,37 @@ const createStyles = (isDarkMode: boolean) =>
       fontSize: 16,
     },
     inputContainer: {
-      marginTop: 80,
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.9)',
+      borderRadius:16,
+      padding: 20,
+      marginTop: 20,
+    },
+    inputWrapper:{
+      marginBottom:20,
     },
     label: {
       fontSize: 14,
+      color: isDarkMode ? '#CEC7BF' : '#666',
       marginBottom: 8,
     },
     input: {
       borderWidth: 1,
-      borderColor: '#ccc',
-      borderRadius: 8,
-      padding: 10,
-      marginBottom: 16,
-      backgroundColor: '#fff',
+      borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#ddd',
+      borderRadius: 12,
+      padding: 15,
+      fontSize: 16,
+      color: isDarkMode ? '#FFFFFF' : '#333',
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+    },
+    gradientButton: {
+      borderRadius: 12,
+      padding: 16,
+    },
+    proceedButtonText: {
+      color: '#FFFFFF',
+      fontSize: 18,
+      fontWeight: 'bold',
+      textAlign: 'center',
     },
     errorInput: {
       borderColor: '#E53E3E',
@@ -396,11 +486,6 @@ const createStyles = (isDarkMode: boolean) =>
       borderRadius: 8,
       alignItems: 'center',
       marginTop: 16,
-    },
-    proceedButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
     },
   });
 

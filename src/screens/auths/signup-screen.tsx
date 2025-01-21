@@ -1,3 +1,15 @@
+/*
+..Project : udyampay paymentgetway system
+..Author : Uday Kumar
+..Date   : 2022-02-15
+..Version : 1.0
+..Description : This is a payment gateway system for udyampay project
+..Usage   : This script is used to process payment transactions
+..Notes    : This script is used to process payment transactions
+..email : somyaranjan048@gmail.com
+..github : https://github.com/somyaranjan048
+..linkedIn: https://www.linkedin.com/in/somyaranjan048/
+*/
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     View,
